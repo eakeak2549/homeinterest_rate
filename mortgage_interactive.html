@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คำนวณสินเชื่อบ้าน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --border: #e2e8f0;
+  --border2: #cbd5e1;
+  --primary: #2563eb;
+  --primary-light: #eff6ff;
+  --primary-mid: #bfdbfe;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --amber: #d97706;
+  --amber-light: #fffbeb;
+  --text: #0f172a;
+  --text2: #475569;
+  --text3: #94a3b8;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  font-family: 'Sarabun', sans-serif;
+  min-height: 100vh;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.header { margin-bottom: 24px; }
+.header h1 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+.header p { font-size: 0.88rem; color: var(--text2); }
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--primary);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Input grid */
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 600px) { .input-grid { grid-template-columns: 1fr; } }
+
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label { font-size:0.78rem; font-weight:600; color:var(--text2); }
+
+.input-wrap { position:relative; }
+.input-wrap input {
+  width: 100%;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 46px 10px 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -moz-appearance: textfield;
+}
+.input-wrap input::-webkit-outer-spin-button,
+.input-wrap input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.input-wrap input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  background: #fff;
+}
+.input-wrap .unit {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  font-size:0.7rem; font-weight:600; color:var(--text3); pointer-events:none;
+}
+
+/* Year grid - responsive, fills width */
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.year-card {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 16px 14px;
+  transition: border-color 0.15s;
+}
+.year-card:hover { border-color: var(--primary-mid); }
+
+.year-card-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.year-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.year-tag { font-size:0.68rem; color:var(--text3); }
+
+.default-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.default-row label { font-size:0.74rem; color:var(--text2); font-weight:500; white-space:nowrap; }
+.default-row .dinput {
+  flex: 1;
+  min-width: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  background: #fff;
+  border: 1.5px solid var(--border2);
+  border-radius: 6px;
+  padding: 7px 10px;
+  -moz-appearance: textfield;
+  transition: border-color 0.15s;
+}
+.default-row .dinput::-webkit-outer-spin-button,
+.default-row .dinput::-webkit-inner-spin-button { -webkit-appearance:none; }
+.default-row .dinput:focus { outline:none; border-color:var(--primary); }
+
+.fill-btn {
+  font-family: 'Sarabun', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px solid var(--primary-mid);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.fill-btn:hover { background: var(--primary-mid); }
+
+.expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+}
+.expand-toggle:hover { color: var(--primary); }
+.expand-toggle .arr { display:inline-block; transition:transform 0.2s; font-size:0.6rem; }
+.expand-toggle.open .arr { transform: rotate(90deg); }
+
+.monthly-grid {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.monthly-grid.open { display:grid; }
+
+.month-field { display:flex; flex-direction:column; gap:3px; }
+.month-field label { font-size:0.63rem; font-weight:700; color:var(--text3); text-transform:uppercase; }
+.month-field input {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 5px 8px;
+  width: 100%;
+  -moz-appearance: textfield;
+  transition: border-color 0.15s;
+}
+.month-field input::-webkit-outer-spin-button,
+.month-field input::-webkit-inner-spin-button { -webkit-appearance:none; }
+.month-field input:focus { outline:none; border-color:var(--primary); }
+.month-field input.is-warn { border-color:var(--amber); color:var(--amber); background:var(--amber-light); }
+.month-field input.is-danger { border-color:var(--red); color:var(--red); background:var(--red-light); }
+
+/* Calc button */
+.calc-btn {
+  width: 100%;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.calc-btn:hover { background:#1d4ed8; box-shadow:0 4px 16px rgba(37,99,235,0.35); }
+.calc-btn:active { transform:scale(0.99); }
+
+/* Alert */
+.alert {
+  display: none;
+  background: var(--red-light);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.83rem;
+  color: var(--red);
+  margin-bottom: 14px;
+}
+.alert.show { display:block; }
+
+/* Results */
+.results { display:none; }
+.results.visible { display:block; animation: fadeUp 0.35s ease; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(12px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* Chips */
+.chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px 12px;
+  border-top: 3px solid var(--border2);
+}
+.chip.blue { border-top-color: var(--primary); }
+.chip.red  { border-top-color: var(--red); }
+.chip.green{ border-top-color: var(--green); }
+.chip.amber{ border-top-color: var(--amber); }
+
+.chip-label { font-size:0.68rem; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:5px; }
+.chip-value { font-family:'IBM Plex Mono',monospace; font-size:1rem; font-weight:600; line-height:1.2; }
+.chip-value.blue  { color:var(--primary); }
+.chip-value.red   { color:var(--red); }
+.chip-value.green { color:var(--green); }
+.chip-value.amber { color:var(--amber); }
+.chip-sub { font-size:0.68rem; color:var(--text3); margin-top:3px; }
+
+/* Table */
+.table-tabs { display:flex; gap:6px; margin-bottom:12px; }
+.ttab {
+  font-family:'Sarabun',sans-serif;
+  font-size:0.82rem; font-weight:600;
+  padding:6px 18px;
+  border-radius:6px; cursor:pointer;
+  border:1.5px solid var(--border2);
+  background:transparent; color:var(--text2);
+  transition:all 0.15s;
+}
+.ttab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+.table-wrap { overflow-x:auto; border-radius:var(--radius-sm); border:1px solid var(--border); }
+
+table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+thead th {
+  background:var(--surface2);
+  padding:10px 14px; text-align:right;
+  font-size:0.7rem; font-weight:700; color:var(--text2);
+  text-transform:uppercase; letter-spacing:0.4px;
+  white-space:nowrap; border-bottom:1px solid var(--border);
+}
+thead th:first-child { text-align:left; }
+tbody tr { border-bottom:1px solid var(--border); transition:background 0.1s; }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:var(--surface2); }
+tbody tr.yr { background:#f8fafc; font-weight:600; }
+tbody tr.danger-row { background:#fff5f5; }
+tbody tr.warn-row { background:#fffdf5; }
+
+td { padding:8px 14px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:0.8rem; }
+td:first-child { text-align:left; font-family:'Sarabun',sans-serif; color:var(--text2); }
+
+.td-i   { color:var(--red); }
+.td-p   { color:var(--green); }
+.td-neg { color:var(--red); font-weight:700; }
+
+.badge {
+  display:inline-block; font-size:0.6rem; font-weight:700;
+  padding:1px 6px; border-radius:4px; margin-left:5px;
+  font-family:'Sarabun',sans-serif; vertical-align:middle;
+}
+.b-fix    { background:var(--primary-light); color:var(--primary); }
+.b-warn   { background:var(--amber-light); color:var(--amber); }
+.b-danger { background:var(--red-light); color:var(--red); }
+
+/* After-fix section */
+.after-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+.after-title {
+  font-size:0.7rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:1px; color:var(--amber); margin-bottom:6px;
+}
+.after-sub { font-size:0.82rem; color:var(--text2); margin-bottom:14px; }
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 8px;
+}
+.scenario {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:12px; text-align:center;
+}
+.sc-rate { font-family:'IBM Plex Mono',monospace; font-size:1rem; font-weight:700; color:var(--amber); margin-bottom:4px; }
+.sc-label { font-size:0.66rem; color:var(--text3); margin-bottom:3px; }
+.sc-val { font-family:'IBM Plex Mono',monospace; font-size:0.82rem; font-weight:600; color:var(--text); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>🏠 คำนวณสินเชื่อบ้าน</h1>
+    <p>จำลองการผ่อนชำระรายเดือนช่วง Fix Rate — ปรับยอดผ่อนได้แต่ละเดือน</p>
+  </div>
+
+  <!-- Basic info -->
+  <div class="card">
+    <div class="card-title">ข้อมูลพื้นฐาน</div>
+    <div class="input-grid">
+      <div class="field">
+        <label>วงเงินกู้</label>
+        <div class="input-wrap">
+          <input type="number" id="principal" value="6500000" min="0" step="100000">
+          <span class="unit">บาท</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>ดอกเบี้ย Fix</label>
+        <div class="input-wrap">
+          <input type="number" id="fixRate" value="2.3" min="0" max="20" step="0.01">
+          <span class="unit">%/ปี</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>ระยะ Fix (ปี)</label>
+        <div class="input-wrap">
+          <input type="number" id="fixYears" value="3" min="1" max="10" step="1">
+          <span class="unit">ปี</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Year cards -->
+  <div class="card">
+    <div class="card-title">ยอดผ่อนรายปี — ปรับแต่ละเดือนได้</div>
+    <div class="year-grid" id="yearGrid"></div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">📊 คำนวณ</button>
+
+  <div class="alert" id="alertBox"></div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+
+    <div class="card">
+      <div class="card-title">สรุปภาพรวม</div>
+      <div class="chips-grid" id="chipsGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ตารางการผ่อนชำระ</div>
+      <div class="table-tabs">
+        <button class="ttab active" onclick="switchTab('month',this)">รายเดือน</button>
+        <button class="ttab" onclick="switchTab('year',this)">รายปี</button>
+      </div>
+      <div class="table-wrap">
+        <table id="mainTable"></table>
+      </div>
+    </div>
+
+    <div class="after-card" id="afterCard"></div>
+
+  </div>
+</div>
+
+<script>
+const MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+let monthlyPayments = {};
+let yearDefaults = {};
+let scheduleData = [];
+let currentTab = 'month';
+
+const fmt  = (n,d=2) => isNaN(n)?'-':Math.abs(n).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtI = n => Math.round(n).toLocaleString('th-TH');
+const getYears = () => parseInt(document.getElementById('fixYears').value)||3;
+
+function buildYearBlocks() {
+  const fy = getYears();
+  const grid = document.getElementById('yearGrid');
+  grid.innerHTML = '';
+
+  for (let y = 1; y <= fy; y++) {
+    if (!yearDefaults[y]) yearDefaults[y] = 35000;
+
+    const card = document.createElement('div');
+    card.className = 'year-card';
+    card.innerHTML = `
+      <div class="year-card-hdr">
+        <span class="year-badge">ปีที่ ${y}</span>
+        <span class="year-tag">12 เดือน</span>
+      </div>
+      <div class="default-row">
+        <label>ยอดผ่อน</label>
+        <input class="dinput" type="number" id="yd_${y}" value="${yearDefaults[y]}" min="0" step="1000" onchange="onYearDefault(${y})">
+        <button class="fill-btn" onclick="fillYear(${y})">ใส่ทุกเดือน</button>
+      </div>
+      <span class="expand-toggle" id="tog_${y}" onclick="toggleMonths(${y})">
+        <span class="arr">▶</span>&nbsp;ปรับรายเดือน
+      </span>
+      <div class="monthly-grid" id="mg_${y}">
+        ${Array.from({length:12},(_,m)=>{
+          const key=`${y}-${m+1}`;
+          const val=monthlyPayments[key]??yearDefaults[y];
+          return `<div class="month-field">
+            <label>${MONTHS_TH[m]}</label>
+            <input type="number" id="mp_${y}_${m+1}" value="${val}" min="0" step="500" onchange="onMonthChange(${y},${m+1})">
+          </div>`;
+        }).join('')}
+      </div>`;
+    grid.appendChild(card);
+  }
+}
+
+function onYearDefault(y) {
+  yearDefaults[y] = parseFloat(document.getElementById(`yd_${y}`).value)||0;
+}
+
+function fillYear(y) {
+  const val = parseFloat(document.getElementById(`yd_${y}`).value)||0;
+  yearDefaults[y] = val;
+  for (let m=1;m<=12;m++) {
+    monthlyPayments[`${y}-${m}`]=val;
+    const el=document.getElementById(`mp_${y}_${m}`);
+    if(el){el.value=val;el.className='';}
+  }
+}
+
+function onMonthChange(y,m) {
+  monthlyPayments[`${y}-${m}`]=parseFloat(document.getElementById(`mp_${y}_${m}`).value)||0;
+}
+
+function toggleMonths(y) {
+  const mg  = document.getElementById(`mg_${y}`);
+  const tog = document.getElementById(`tog_${y}`);
+  const open = mg.classList.contains('open');
+  if (open) {
+    mg.classList.remove('open');
+    tog.classList.remove('open');
+    tog.innerHTML = `<span class="arr">▶</span>&nbsp;ปรับรายเดือน`;
+  } else {
+    for (let m=1;m<=12;m++) {
+      const key=`${y}-${m}`;
+      if(monthlyPayments[key]===undefined) monthlyPayments[key]=yearDefaults[y]||35000;
+      const el=document.getElementById(`mp_${y}_${m}`);
+      if(el) el.value=monthlyPayments[key];
+    }
+    mg.classList.add('open');
+    tog.classList.add('open');
+    tog.innerHTML = `<span class="arr">▶</span>&nbsp;ซ่อนรายเดือน`;
+  }
+}
+
+function getPayment(y,m) {
+  const key=`${y}-${m}`;
+  return monthlyPayments[key]!==undefined ? monthlyPayments[key] : (yearDefaults[y]||35000);
+}
+
+function calculate() {
+  const principal = parseFloat(document.getElementById('principal').value)||0;
+  const rate      = parseFloat(document.getElementById('fixRate').value)||0;
+  const fy        = getYears();
+  const mr        = rate/100/12;
+
+  for(let y=1;y<=fy;y++)
+    for(let m=1;m<=12;m++){
+      const el=document.getElementById(`mp_${y}_${m}`);
+      if(el) monthlyPayments[`${y}-${m}`]=parseFloat(el.value)||0;
+    }
+
+  let bal=principal;
+  scheduleData=[];
+  let totI=0,totP=0;
+  const negMonths=[];
+
+  for(let y=1;y<=fy;y++)
+    for(let m=1;m<=12;m++){
+      const pay=getPayment(y,m);
+      const interest=bal*mr;
+      const pPaid=pay-interest;
+      bal=Math.max(0,bal-pPaid);
+      if(pPaid<0) negMonths.push(`ปี${y} ${MONTHS_TH[m-1]}`);
+      scheduleData.push({y,m,pay,interest,pPaid,bal,
+        isNeg:pPaid<0,
+        isLow:pPaid>=0&&pPaid<interest*0.2});
+      totI+=interest; totP+=pPaid;
+    }
+
+  const endBal=bal;
+  const totPay=scheduleData.reduce((s,r)=>s+r.pay,0);
+
+  const alertEl=document.getElementById('alertBox');
+  if(negMonths.length){
+    const show=negMonths.slice(0,4).join(', ')+(negMonths.length>4?` และอีก ${negMonths.length-4} เดือน`:'');
+    alertEl.innerHTML=`⚠️ <strong>ยอดผ่อนต่ำกว่าดอกเบี้ย</strong> ใน ${show} — เงินต้นจะเพิ่มขึ้นแทนที่จะลดลง!`;
+    alertEl.classList.add('show');
+  } else alertEl.classList.remove('show');
+
+  const fi=scheduleData[0].interest;
+  const chips=[
+    {l:'วงเงินกู้',          v:fmtI(principal)+' ฿', c:'blue',  s:'ยอดตั้งต้น'},
+    {l:'รวมดอกเบี้ย',       v:fmtI(totI)+' ฿',      c:'red',   s:`Fix ${rate}%/ปี`},
+    {l:'รวมลดต้น',          v:fmtI(totP)+' ฿',      c:'green', s:`${fy} ปี`},
+    {l:'คงเหลือ',           v:fmtI(endBal)+' ฿',    c:'amber', s:`หลังปีที่ ${fy}`},
+    {l:'ดอกเบี้ยเดือนแรก',  v:fmt(fi)+' ฿',          c:'red',   s:'เดือนแรก'},
+    {l:'รวมจ่ายทั้งหมด',    v:fmtI(totPay)+' ฿',    c:'blue',  s:`${fy*12} งวด`},
+  ];
+  document.getElementById('chipsGrid').innerHTML=chips.map(c=>`
+    <div class="chip ${c.c}">
+      <div class="chip-label">${c.l}</div>
+      <div class="chip-value ${c.c}">${c.v}</div>
+      <div class="chip-sub">${c.s}</div>
+    </div>`).join('');
+
+  renderTable(currentTab);
+  renderAfter(endBal,rate,fy);
+  document.getElementById('results').classList.add('visible');
+  setTimeout(()=>document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+
+function renderTable(view) {
+  const t=document.getElementById('mainTable');
+  if(view==='month'){
+    t.innerHTML=`<thead><tr>
+      <th>งวด</th><th>ผ่อน (฿)</th><th>ดอกเบี้ย (฿)</th><th>ลดต้น (฿)</th><th>คงเหลือ (฿)</th>
+    </tr></thead><tbody>${scheduleData.map(r=>{
+      const cls=r.isNeg?'danger-row':r.isLow?'warn-row':'';
+      const badge=r.isNeg?'<span class="badge b-danger">ติดลบ!</span>'
+        :r.isLow?'<span class="badge b-warn">ต่ำมาก</span>'
+        :'<span class="badge b-fix">Fix</span>';
+      return `<tr class="${cls}">
+        <td>ปี${r.y} ${MONTHS_TH[r.m-1]}${badge}</td>
+        <td>${fmtI(r.pay)}</td>
+        <td class="td-i">${fmt(r.interest)}</td>
+        <td class="${r.isNeg?'td-neg':'td-p'}">${r.isNeg?'−':''}${fmt(r.pPaid)}</td>
+        <td>${fmtI(r.bal)}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+  } else {
+    const fy=getYears();
+    const yrs=Array.from({length:fy},(_,i)=>i+1).map(y=>{
+      const rows=scheduleData.filter(r=>r.y===y);
+      return {y,
+        pay:rows.reduce((s,r)=>s+r.pay,0),
+        totI:rows.reduce((s,r)=>s+r.interest,0),
+        totP:rows.reduce((s,r)=>s+r.pPaid,0),
+        bal:rows.at(-1).bal,
+        hasNeg:rows.some(r=>r.isNeg)};
+    });
+    t.innerHTML=`<thead><tr>
+      <th>ปี</th><th>รวมจ่าย (฿)</th><th>รวมดอกเบี้ย (฿)</th><th>รวมลดต้น (฿)</th><th>คงเหลือ (฿)</th>
+    </tr></thead><tbody>${yrs.map(y=>`
+      <tr class="yr${y.hasNeg?' danger-row':''}">
+        <td>ปีที่ ${y.y}${y.hasNeg?'<span class="badge b-danger">มีติดลบ</span>':''}</td>
+        <td>${fmtI(y.pay)}</td>
+        <td class="td-i">${fmtI(y.totI)}</td>
+        <td class="${y.hasNeg?'td-neg':'td-p'}">${fmtI(y.totP)}</td>
+        <td>${fmtI(y.bal)}</td>
+      </tr>`).join('')}</tbody>`;
+  }
+}
+
+function renderAfter(endBal,fixRate,fy) {
+  document.getElementById('afterCard').innerHTML=`
+    <div class="after-title">⏭ ประมาณการหลังหมด Fix Rate</div>
+    <div class="after-sub">ยอดคงเหลือ <strong>${fmtI(endBal)} บาท</strong> หลังปีที่ ${fy} · ดอกเบี้ยลอยตัวที่อาจเกิดขึ้น</div>
+    <div class="scenario-grid">
+      ${[4.0,4.5,5.0,5.5,6.0].map(r=>{
+        const mi=endBal*r/100/12;
+        return `<div class="scenario">
+          <div class="sc-rate">${r.toFixed(1)}%</div>
+          <div class="sc-label">ดบ./เดือน</div>
+          <div class="sc-val">${fmtI(mi)} ฿</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function switchTab(tab,btn) {
+  currentTab=tab;
+  document.querySelectorAll('.ttab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(tab);
+}
+
+document.getElementById('fixYears').addEventListener('change', buildYearBlocks);
+buildYearBlocks();
+</script>
+</body>
+</html>
