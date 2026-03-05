@@ -93,6 +93,30 @@
   --text3: #475569;
 }
 
+/* ── THEME: Pastel (หวานพาสเทล) ── */
+[data-theme="pastel"] {
+  --bg: #fdf0f8;
+  --surface: #ffffff;
+  --surface2: #fef5fb;
+  --border: #f0d6ea;
+  --border2: #e0aed4;
+  --primary: #b3509e;
+  --primary-light: #fdf0f8;
+  --primary-mid: #f0b8e4;
+  --primary-btn-hover: #9e4590;
+  --primary-shadow: rgba(179,80,158,0.22);
+  --primary-shadow-hover: rgba(179,80,158,0.36);
+  --red: #e05c8a;
+  --red-light: #fff0f5;
+  --green: #4a9e7a;
+  --green-light: #f0fdf7;
+  --amber: #c48a2e;
+  --amber-light: #fefaf0;
+  --text: #2d1a28;
+  --text2: #7a4870;
+  --text3: #c49abd;
+}
+
 /* ── Theme switcher UI ── */
 .theme-bar {
   display: flex;
@@ -127,6 +151,7 @@
 .theme-swatch[data-t="forest"]   { background: linear-gradient(135deg,#16803c,#4ade80); }
 .theme-swatch[data-t="sunset"]   { background: linear-gradient(135deg,#c2410c,#fb923c); }
 .theme-swatch[data-t="midnight"] { background: linear-gradient(135deg,#1e1b4b,#818cf8); }
+.theme-swatch[data-t="pastel"]   { background: linear-gradient(135deg,#f0a8d8,#c8b4fa,#a8d8f0); }
 .theme-name {
   font-size: 0.75rem;
   color: var(--text2);
@@ -496,6 +521,7 @@ td:first-child { text-align:left; font-family:'Sarabun',sans-serif; color:var(--
         <div class="theme-swatch"        data-t="forest"   title="Forest"      onclick="setTheme('forest',this)"></div>
         <div class="theme-swatch"        data-t="sunset"   title="Sunset"      onclick="setTheme('sunset',this)"></div>
         <div class="theme-swatch"        data-t="midnight" title="Midnight"    onclick="setTheme('midnight',this)"></div>
+        <div class="theme-swatch"        data-t="pastel"   title="Pastel"      onclick="setTheme('pastel',this)"></div>
       </div>
       <span class="theme-name" id="themeName">Ocean Blue</span>
     </div>
@@ -782,7 +808,7 @@ function switchTab(tab,btn) {
   renderTable(tab);
 }
 
-const THEME_NAMES = { ocean:'Ocean Blue', forest:'Forest', sunset:'Sunset', midnight:'Midnight' };
+const THEME_NAMES = { ocean:'Ocean Blue', forest:'Forest', sunset:'Sunset', midnight:'Midnight', pastel:'Pastel' };
 
 function setTheme(t, el) {
   if (t === 'ocean') {
